@@ -1,8 +1,6 @@
 #include <iostream>
 #include <pqxx/pqxx>
-#include <pqxx/nontransaction.hxx>
 #include <chrono>
-#include <iomanip>
 #include <future>
 #include <thread>
 
