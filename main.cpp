@@ -31,6 +31,8 @@ int main()
 
     pqxx::connection c(
                 "user=postgres password=12345 host=localhost port=5432 dbname=test");
+    c.prepare("insert record",
+              "insert into cdr values(default,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21);");
 
     int i = 0;
 
@@ -40,12 +42,22 @@ int main()
 
     std::future<void> f = std::async(std::launch::async, [&]()
     {
+        auto w = std::make_unique<pqxx::work>(c);
         while (true)
         {
             cdr record;
-            pqxx::work w(c);
-            w.exec("insert into cdr values(" + record.prep_str_for_insert() +")");
-            w.commit();
+
+            w->exec_prepared("insert record", record.int_param1, record.int_param2, record.int_param3, record.int_param4, record.int_param5, record.int_param6,
+                             record.int_param7, record.int_param8, record.int_param9, record.int_param10, record.str_param1, record.str_param2, record.str_param3,
+                             record.str_param4, record.str_param5, record.str_param6, record.str_param7, record.str_param8, record.str_param9, record.str_param10,
+                             record.get_formated_date());
+
+            if (i % 10000 == 0)
+            {
+                w->commit();
+                w = std::make_unique<pqxx::work>(c);
+            }
+
             ++i;
         }
     });
